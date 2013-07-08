@@ -1,5 +1,4 @@
 mobile api application skeleton
 ==========
 
-description and usage coming soon...
-
+Skeleton for mobile api based on Symfony components. Key feature - strict protocol: both requests and responses structure check.
