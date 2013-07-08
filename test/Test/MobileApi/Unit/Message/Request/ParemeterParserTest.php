@@ -1,5 +1,5 @@
 <?php
-namespace Test\MobileApi\Message\Request;
+namespace Test\MobileApi\Unit\Message\Request;
 
 use MobileApi\Message\Request\ParameterParser;
 use MobileApi\Message\Field;

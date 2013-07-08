@@ -1,5 +1,5 @@
 <?php
-namespace Test\Message\Request;
+namespace Test\MobileApi\Message\Request;
 
 class Ping_1 implements \MobileApi\Message\Request\RequestInterface
 {
@@ -11,7 +11,7 @@ class Ping_1 implements \MobileApi\Message\Request\RequestInterface
     public function getAvailableResponses()
     {
         return array(
-            'Test\Message\Response\Pong_1',
+            'Test\MobileApi\Message\Response\Pong_1',
         );
     }
 }

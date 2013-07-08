@@ -1,5 +1,5 @@
 <?php
-namespace Test\MobileApi\Api\Message;
+namespace Test\MobileApi\Unit;
 
 require __DIR__ . '/../Controller/Ping.php';
 require __DIR__ . '/../Message/Request/Ping/1.php';
@@ -13,9 +13,9 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->Application = new \MobileApi\Application;
-        $this->Application->setControllerPrefix('Test\Controller');
+        $this->Application->setControllerPrefix('Test\MobileApi\Controller');
         $this->Application->setControllers(array('Ping'));
-        $this->Application->setMessageRequestPrefix('Test\Message\Request');
+        $this->Application->setMessageRequestPrefix('Test\MobileApi\Message\Request');
     }
 
     public function provider_handle_ping()

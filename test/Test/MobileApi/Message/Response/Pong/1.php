@@ -1,5 +1,5 @@
 <?php
-namespace Test\Message\Response;
+namespace Test\MobileApi\Message\Response;
 
 class Pong_1 implements \MobileApi\Message\Response\ResponseInterface
 {

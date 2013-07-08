@@ -1,5 +1,5 @@
 <?php
-namespace Test\MobileApi\Api\Message;
+namespace Test\MobileApi\Unit\Message;
 
 use MobileApi\Message\Manager;
 use MobileApi\Message\Field;
