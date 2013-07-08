@@ -2,22 +2,14 @@
 namespace MobileApi\Message\Request;
 
 use MobileApi\Message\Field;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
-class GetParser
+class ParameterParser
 {
-    public function fill(RequestInterface $Request, array $get)
+    public function toArray(RequestInterface $Request, ParameterBag $ParameterBag)
     {
         $structure = $Request->getStructure();
-        $data = $this->fillInternal($structure, $get);
-        foreach ($data as $k => $v) {
-            $Request->$k = $v;
-        }
-    }
-
-    public function toArray(RequestInterface $Request, array $params)
-    {
-        $structure = $Request->getStructure();
-        return $this->fillInternal($structure, $params);
+        return $this->fillInternal($structure, $ParameterBag->all());
     }
 
     private function fillInternal(array $structure, array $data)

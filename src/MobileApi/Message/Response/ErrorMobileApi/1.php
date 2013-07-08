@@ -3,10 +3,8 @@ namespace MobileApi\Message\Response;
 
 use MobileApi\Message\Field;
 
-class ErrorMobileApi_1 implements \MobileApi\Message\MessageInterface
+class ErrorMobileApi_1 implements \MobileApi\Message\Response\ResponseInterface
 {
-    const NAME = 'ErrorMobileApi';
-
     //common errors
     const CODE_SERVER_ERROR = 1;
 
@@ -21,6 +19,11 @@ class ErrorMobileApi_1 implements \MobileApi\Message\MessageInterface
     const CODE_RESPONSE_INVALID = 107;
 
     public $code, $message;
+
+    public function getName()
+    {
+        return 'ErrorMobileApi';
+    }
 
     public function getStructure()
     {

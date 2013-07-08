@@ -5,5 +5,5 @@ use MobileApi\Message\MessageInterface;
 
 interface RequestInterface extends MessageInterface
 {
-    function getAvaliableResponses();
+    function getAvailableResponses();
 }

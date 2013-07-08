@@ -14,12 +14,6 @@ use MobileApi\Message\Response\ErrorMobileApi_1;
 
 class Application implements HttpKernelInterface
 {
-    const PARSE_GET_PARAMS = 0x1;
-    const PARSE_GET_JSON = 0x2;
-    const PARSE_POST_PARAMS = 0x4;
-    const PARSE_POST_JSON = 0x8;
-    const PARSE_POST_BSON = 0x10;
-
     /**
      * @var Request
      */
@@ -36,8 +30,10 @@ class Application implements HttpKernelInterface
     /* @var array */
     private $controllers;
 
-    /* @var int */
-    private $request_parse_methods;
+    /* @var bool */
+    private
+        $use_bson = false,
+        $response_bson = false;
 
     public function setControllerPrefix($controller_prefix)
     {
@@ -54,9 +50,9 @@ class Application implements HttpKernelInterface
         $this->controllers = $controllers;
     }
 
-    public function setRequestParseMethods($request_parse_methods)
+    public function useBSON($use_bson)
     {
-        $this->request_parse_methods = $request_parse_methods;
+        $this->use_bson = $use_bson;
     }
 
     public function handle(Request $Request, $type = self::MASTER_REQUEST, $catch = true)
@@ -121,6 +117,7 @@ class Application implements HttpKernelInterface
             );
         }
 
+        /* @var ControllerInterface $Controller */
         $Controller = new $route['controller'];
 
         $Response = $Controller->run($this->ApiRequest);
@@ -136,7 +133,7 @@ class Application implements HttpKernelInterface
         if (!$MessageManager->isValid($Response, $error)) {
             return $this->getResponseError(
                 ErrorMobileApi_1::CODE_RESPONSE_INVALID,
-                'response invalid',
+                'response invalid: ' . $error,
                 500
             );
         }
@@ -187,7 +184,11 @@ class Application implements HttpKernelInterface
     private function getRequestArray()
     {
         if ($this->Request->getMethod() === 'GET') {
-            if ($this->request_parse_methods & self::PARSE_GET_JSON && $this->Request->query->has('json')) {
+            if ($this->Request->query->has('json')) {
+                if ($this->Request->query->get('json') === '') {
+                    return array();
+                }
+
                 $result = @json_decode($this->Request->query->get('json'), true);
                 if (is_array($result)) {
                     return $result;
@@ -195,14 +196,15 @@ class Application implements HttpKernelInterface
                     return false;
                 }
             }
-            if ($this->request_parse_methods & self::PARSE_GET_PARAMS) {
-                $GetParser = new Message\Request\GetParser;
-                return $GetParser->toArray($this->ApiRequest, $this->Request->query->all());
-            }
-        }
 
-        if ($this->Request->getMethod() === 'POST') {
-            if ($this->request_parse_methods & self::PARSE_POST_JSON && $this->Request->request->has('json')) {
+            $GetParser = new Message\Request\ParameterParser;
+            return $GetParser->toArray($this->ApiRequest, $this->Request->query);
+        } elseif ($this->Request->getMethod() === 'POST') {
+            if ($this->Request->request->has('json')) {
+                if ($this->Request->request->get('json') === '') {
+                    return array();
+                }
+
                 $result = @json_decode($this->Request->request->get('json'), true);
                 if (is_array($result)) {
                     return $result;
@@ -211,7 +213,8 @@ class Application implements HttpKernelInterface
                 }
             }
 
-            if ($this->request_parse_methods & self::PARSE_POST_BSON && $this->Request->getContent()) {
+            if ($this->use_bson && $this->Request->getContent()) {
+                $this->response_bson = true;
                 try {
                     $result = @bson_decode($this->Request->getContent());
                     if (is_array($result)) {
@@ -224,13 +227,11 @@ class Application implements HttpKernelInterface
                 }
             }
 
-            if ($this->request_parse_methods & self::PARSE_POST_PARAMS) {
-                $GetParser = new Message\Request\GetParser;
-                return $GetParser->toArray($this->ApiRequest, $this->Request->request->all());
-            }
+            $GetParser = new Message\Request\ParameterParser;
+            return $GetParser->toArray($this->ApiRequest, $this->Request->request);
+        } else {
+            return false;
         }
-
-        return false;
     }
 
     private function getApiRequest($route, $protocol_version)
@@ -246,17 +247,17 @@ class Application implements HttpKernelInterface
 
     private function checkResponseAppropriate(Message\MessageInterface $Response)
     {
-        return in_array(get_class($Response), $this->ApiRequest->getAvaliableResponses());
+        return in_array(get_class($Response), $this->ApiRequest->getAvailableResponses());
     }
 
-    private function getResponse(Message\MessageInterface $Response, $http_code)
+    private function getResponse(Message\Response\ResponseInterface $Response, $http_code)
     {
         $response = array(
-            'message' => $Response::NAME,
+            'message' => $Response->getName(),
             'body' => (array)$Response
         );
 
-        if ($this->Request->isMethod('POST')) {
+        if ($this->response_bson) {
             $content = bson_encode($response);
         } else {
             $content = json_encode($response);

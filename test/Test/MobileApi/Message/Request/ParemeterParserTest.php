@@ -1,10 +1,10 @@
 <?php
 namespace Test\MobileApi\Message\Request;
 
-use MobileApi\Message\Request\GetParser;
+use MobileApi\Message\Request\ParameterParser;
 use MobileApi\Message\Field;
 
-class GetParserTest extends \PHPUnit_Framework_TestCase
+class ParemeterParserTest extends \PHPUnit_Framework_TestCase
 {
     public function provider_toArray()
     {
@@ -125,7 +125,7 @@ class GetParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provider_toArray
      */
-    public function test_toArray(array $structure, array $get, $expected, $comment)
+    public function test_toArray(array $structure, array $parameters, $expected, $comment)
     {
         $vars = '';
         foreach ($structure as $k => $v) {
@@ -136,12 +136,13 @@ class GetParserTest extends \PHPUnit_Framework_TestCase
         $eval = 'class ' . $classname . ' implements \MobileApi\Message\Request\RequestInterface {
             ' . $vars . '
             public function getStructure(){return ' . var_export($structure, true) . ';}
-            public function getAvaliableResponses(){}
+            public function getAvailableResponses(){}
         }';
         eval($eval);
         $Request = new $classname;
 
-        $GetParser = new GetParser;
-        $this->assertSame($expected, $GetParser->toArray($Request, $get), $comment);
+        $ParameterParser = new ParameterParser;
+        $ParameterBag = new \Symfony\Component\HttpFoundation\ParameterBag($parameters);
+        $this->assertSame($expected, $ParameterParser->toArray($Request, $ParameterBag), $comment);
     }
 }
