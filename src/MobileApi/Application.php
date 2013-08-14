@@ -86,7 +86,7 @@ class Application implements HttpKernelInterface
         $route = $this->getRoute($UrlMatcher, $this->Request);
         if (!$route) {
             return $this->getResponseError(
-                ErrorMobileApi_1::CODE_UNKOWN_COMMAND,
+                ErrorMobileApi_1::UNKOWN_COMMAND,
                 'route not found',
                 404
             );
@@ -95,7 +95,7 @@ class Application implements HttpKernelInterface
         $this->ApiRequest = $this->getApiRequest($route['_route'], $route['protocol_version']);
         if (!$this->ApiRequest) {
             return $this->getResponseError(
-                ErrorMobileApi_1::CODE_REQUEST_CLASS_NOT_FOUND,
+                ErrorMobileApi_1::REQUEST_CLASS_NOT_FOUND,
                 'request class not found',
                 500
             );
@@ -103,7 +103,7 @@ class Application implements HttpKernelInterface
 
         if (!$this->fillRequest()) {
             return $this->getResponseError(
-                ErrorMobileApi_1::CODE_REQUEST_DECODE_FAIL,
+                ErrorMobileApi_1::REQUEST_DECODE_FAIL,
                 'request not decoded',
                 400
             );
@@ -111,7 +111,7 @@ class Application implements HttpKernelInterface
 
         if (!$MessageManager->isValid($this->ApiRequest, $error)) {
             return $this->getResponseError(
-                ErrorMobileApi_1::CODE_REQUEST_INVALID,
+                ErrorMobileApi_1::REQUEST_INVALID,
                 'request invalid',
                 400
             );
@@ -124,7 +124,7 @@ class Application implements HttpKernelInterface
 
         if (!$this->checkResponseAppropriate($Response)) {
             return $this->getResponseError(
-                ErrorMobileApi_1::CODE_REQUEST_RESPONSE_NOT_APPROPRIATE,
+                ErrorMobileApi_1::REQUEST_RESPONSE_NOT_APPROPRIATE,
                 'response not appropriate',
                 500
             );
@@ -132,7 +132,7 @@ class Application implements HttpKernelInterface
 
         if (!$MessageManager->isValid($Response, $error)) {
             return $this->getResponseError(
-                ErrorMobileApi_1::CODE_RESPONSE_INVALID,
+                ErrorMobileApi_1::RESPONSE_INVALID,
                 'response invalid: ' . $error,
                 500
             );
@@ -290,6 +290,6 @@ class Application implements HttpKernelInterface
         }
 
         error_log(rtrim($log));
-        return $this->getResponseError(ErrorMobileApi_1::CODE_SERVER_ERROR, get_class($Exception), 500);
+        return $this->getResponseError(ErrorMobileApi_1::SERVER_ERROR, get_class($Exception), 500);
     }
 }
