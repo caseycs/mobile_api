@@ -61,9 +61,9 @@ class Application implements HttpKernelInterface
             return $this->handleRaw($Request);
         } catch (\Exception $Exception) {
             if ($catch === true) {
-                throw $Exception;
+                return $this->sendExceptionResponse($Exception);
             } else {
-                return $this->handleException($Exception);
+                throw $Exception;
             }
         }
     }
@@ -276,20 +276,9 @@ class Application implements HttpKernelInterface
         return $this->getResponse($Response, $http_code);
     }
 
-    private function handleException(\Exception $Exception)
+    public function sendExceptionResponse(\Exception $Exception)
     {
-        $trace_string = $Exception->getTraceAsString();
-        if ($Exception instanceof \ErrorException) {
-            $trace_string = substr($trace_string, strpos($trace_string, '#1 '));
-        }
-        $log = get_class($Exception) . " [" . $Exception->getCode() . "] ";
-        $log .= $Exception->getMessage() . "\n" . $trace_string . "\n";
-
-        if (!empty($_SERVER['REQUEST_URI'])) {
-           $log .= 'REQUEST_URI: ' . $_SERVER['REQUEST_URI'] . "\n";
-        }
-
-        error_log(rtrim($log));
-        return $this->getResponseError(ErrorMobileApi_1::SERVER_ERROR, get_class($Exception), 500);
+        $message = get_class($Exception) . ' ' . $Exception->getMessage();
+        return $this->getResponseError(ErrorMobileApi_1::SERVER_ERROR, $message, 500);
     }
 }
