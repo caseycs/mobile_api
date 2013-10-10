@@ -3,7 +3,10 @@ namespace Test\MobileApi\Unit;
 
 require __DIR__ . '/../Controller/Ping.php';
 require __DIR__ . '/../Message/Request/Ping/1.php';
+require __DIR__ . '/../Message/Request/Ping/2.php';
 require __DIR__ . '/../Message/Response/Pong/1.php';
+require __DIR__ . '/../Message/Response/Error/1.php';
+require __DIR__ . '/Handler.php';
 
 class ApplicationTest extends \PHPUnit_Framework_TestCase
 {
@@ -90,6 +93,51 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $response = $bson ? bson_decode($Response->getContent()) : json_decode($Response->getContent(), true);
         $this->assertSame(
             array('message' => 'Pong', 'body' => array('content' => 'Pong')),
+            $response,
+            $comment
+        );
+    }
+
+    public function provider_preHandler()
+    {
+        $uri = 'http://localhost/Ping/2';
+        $result = array();
+
+        $Request = \Symfony\Component\HttpFoundation\Request::create(
+            $uri,
+            'GET',
+            array()
+        );
+        $result[] = array($Request, array('message' => 'Pong', 'body' => array('content' => 'Pong')), 'normal request');
+
+        $Request = \Symfony\Component\HttpFoundation\Request::create(
+            $uri,
+            'GET',
+            array('test' => 1)
+        );
+        $result[] = array($Request, array('message' => 'Pong', 'body' => array('content' => 'Test 1')), 'response from handler');
+
+        $Request = \Symfony\Component\HttpFoundation\Request::create(
+            $uri,
+            'GET',
+            array('test' => 2)
+        );
+        $result[] = array($Request, array('message' => 'Error', 'body' => array('code' => 1, 'msg' => 'test error')), 'error form handler');
+
+        return $result;
+    }
+
+    /**
+     * @dataProvider provider_preHandler
+     */
+    public function test_preHandler(\Symfony\Component\HttpFoundation\Request $Request, array $message, $comment) {
+        $this->Application->setPreHandler(new Handler());
+
+        $Response = $this->Application->handle($Request);
+        $this->assertSame(200, $Response->getStatusCode(), $comment);
+        $response = json_decode($Response->getContent(), true);
+        $this->assertSame(
+            $message,
             $response,
             $comment
         );

@@ -24,6 +24,11 @@ class Application implements HttpKernelInterface
      */
     private $ApiRequest;
 
+    /**
+     * @var HandlerInterface
+     */
+    private $preHandler;
+
     /* @var string */
     private $controller_prefix, $message_request_prefix;
 
@@ -66,6 +71,10 @@ class Application implements HttpKernelInterface
                 throw $Exception;
             }
         }
+    }
+
+    public function setPreHandler(HandlerInterface $Handler) {
+        $this->preHandler = $Handler;
     }
 
     private function handleRaw(Request $Request)
@@ -117,10 +126,17 @@ class Application implements HttpKernelInterface
             );
         }
 
-        /* @var ControllerInterface $Controller */
-        $Controller = new $route['controller'];
+        $Response = null;
+        if (null !== $this->preHandler) {
+            $Response = $this->preHandler->run($this->ApiRequest);
+        }
 
-        $Response = $Controller->run($this->ApiRequest);
+        if (null === $Response) {
+            /* @var ControllerInterface $Controller */
+            $Controller = new $route['controller'];
+
+            $Response = $Controller->run($this->ApiRequest);
+        }
 
         if (!$this->checkResponseAppropriate($Response)) {
             return $this->getResponseError(
