@@ -8,9 +8,10 @@ use MobileApi\Message\Response\ResponseInterface;
 interface HandlerInterface {
 
     /**
+     * @param ControllerInterface $Controller
      * @param RequestInterface $Request
      * @return null|ResponseInterface
      */
-    public function run(RequestInterface $Request);
+    public function run(ControllerInterface $Controller, RequestInterface $Request);
 
 }

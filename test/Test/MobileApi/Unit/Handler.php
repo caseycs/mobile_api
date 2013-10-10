@@ -10,6 +10,7 @@
 namespace Test\MobileApi\Unit;
 
 
+use MobileApi\ControllerInterface;
 use MobileApi\HandlerInterface;
 use MobileApi\Message\Request\RequestInterface;
 use MobileApi\Message\Response\ResponseInterface;
@@ -18,10 +19,11 @@ use Test\MobileApi\Message\Request\Ping_2;
 class Handler implements HandlerInterface {
 
     /**
+     * @param ControllerInterface $Controller
      * @param Ping_2 $Request
      * @return null|ResponseInterface
      */
-    public function run(RequestInterface $Request)
+    public function run(ControllerInterface $Controller, RequestInterface $Request)
     {
         if($Request->test == 1) {
             $Response = new \Test\MobileApi\Message\Response\Pong_1();

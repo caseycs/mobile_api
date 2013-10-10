@@ -126,15 +126,15 @@ class Application implements HttpKernelInterface
             );
         }
 
+        /* @var ControllerInterface $Controller */
+        $Controller = new $route['controller'];
+
         $Response = null;
         if (null !== $this->preHandler) {
-            $Response = $this->preHandler->run($this->ApiRequest);
+            $Response = $this->preHandler->run($Controller, $this->ApiRequest);
         }
 
         if (null === $Response) {
-            /* @var ControllerInterface $Controller */
-            $Controller = new $route['controller'];
-
             $Response = $Controller->run($this->ApiRequest);
         }
 
