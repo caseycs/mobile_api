@@ -28,9 +28,9 @@ class Application implements HttpKernelInterface
     private $ApiRequest;
 
     /**
-     * @var HandlerInterface
+     * @var HandlerInterface[]
      */
-    private $preHandler;
+    private $preHandlers = array();
 
     /* @var string */
     private $controller_prefix, $message_request_prefix;
@@ -76,8 +76,8 @@ class Application implements HttpKernelInterface
         }
     }
 
-    public function setPreHandler(HandlerInterface $Handler) {
-        $this->preHandler = $Handler;
+    public function addPreHandler(HandlerInterface $Handler) {
+        $this->preHandlers[] = $Handler;
     }
 
     private function handleRaw(Request $Request)
@@ -146,8 +146,13 @@ class Application implements HttpKernelInterface
         $Controller = new $route['controller'];
 
         $Response = null;
-        if (null !== $this->preHandler) {
-            $Response = $this->preHandler->run($Controller, $this->ApiRequest);
+        if (!empty($this->preHandlers)) {
+            foreach($this->preHandlers as $preHandler) {
+                $Response = $preHandler->run($Controller, $this->ApiRequest);
+                if (null !== $Response) {
+                    break;
+                }
+            }
         }
 
         if (null === $Response) {

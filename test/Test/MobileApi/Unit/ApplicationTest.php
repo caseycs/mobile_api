@@ -11,7 +11,8 @@ require __DIR__ . '/../Message/Request/Ping/2.php';
 require __DIR__ . '/../Message/Response/Pong/1.php';
 require __DIR__ . '/../Message/Response/Upload/1.php';
 require __DIR__ . '/../Message/Response/Error/1.php';
-require __DIR__ . '/Handler.php';
+require __DIR__ . '/HandlerTestPong.php';
+require __DIR__ . '/HandlerTestError.php';
 
 class ApplicationTest extends \PHPUnit_Framework_TestCase
 {
@@ -136,7 +137,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
      * @dataProvider provider_preHandler
      */
     public function test_preHandler(\Symfony\Component\HttpFoundation\Request $Request, array $message, $comment) {
-        $this->Application->setPreHandler(new Handler());
+        $this->Application->addPreHandler(new HandlerTestPong());
+        $this->Application->addPreHandler(new HandlerTestError());
 
         $Response = $this->Application->handle($Request);
         $this->assertSame(200, $Response->getStatusCode(), $comment);

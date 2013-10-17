@@ -16,11 +16,11 @@ use MobileApi\Message\Request\RequestInterface;
 use MobileApi\Message\Response\ResponseInterface;
 use Test\MobileApi\Message\Request\Ping_2;
 
-class Handler implements HandlerInterface {
+class HandlerTestPong implements HandlerInterface {
 
     /**
      * @param ControllerInterface $Controller
-     * @param Ping_2 $Request
+     * @param \MobileApi\Message\Request\RequestInterface|\Test\MobileApi\Message\Request\Ping_2 $Request
      * @return null|ResponseInterface
      */
     public function run(ControllerInterface $Controller, RequestInterface $Request)
@@ -31,11 +31,5 @@ class Handler implements HandlerInterface {
             return $Response;
         }
 
-        if($Request->test == 2) {
-            $Response = new \Test\MobileApi\Message\Response\Error_1();
-            $Response->code = 1;
-            $Response->msg = 'test error';
-            return $Response;
-        }
     }
 }
