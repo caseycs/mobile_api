@@ -8,7 +8,7 @@ class Manager
     public function isValid(\MobileApi\Message\MessageInterface $Message, &$error)
     {
         $structure = $Message->getStructure();
-        $message = (array)$Message;
+        $message = get_object_vars($Message);
 
         return $this->isValidInternal($message, $structure, $error);
     }

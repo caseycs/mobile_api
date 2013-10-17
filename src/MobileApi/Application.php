@@ -1,6 +1,9 @@
 <?php
 namespace MobileApi;
 
+use MobileApi\Message\Request\UploadInterface;
+use MobileApi\Message\Response\ErrorUploadMobileApi_1;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
@@ -118,10 +121,23 @@ class Application implements HttpKernelInterface
             );
         }
 
+        if ($this->ApiRequest instanceof UploadInterface) {
+            $errorResponse = $this->fillUpload($this->ApiRequest);
+            if (null !== $errorResponse) {
+                return $errorResponse;
+            }
+        } elseif($this->Request->files->count() > 0) {
+            return $this->getResponseErrorUpload(
+                ErrorUploadMobileApi_1::NOT_UPLOAD_INTERFACE,
+                'request not implement upload interface',
+                400
+            );
+        }
+
         if (!$MessageManager->isValid($this->ApiRequest, $error)) {
             return $this->getResponseError(
                 ErrorMobileApi_1::REQUEST_INVALID,
-                'request invalid',
+                'request invalid: ' . $error,
                 400
             );
         }
@@ -181,6 +197,41 @@ class Application implements HttpKernelInterface
         } catch (ResourceNotFoundException $Exception) {
             return false;
         }
+    }
+
+    private function fillUpload(UploadInterface $Request)
+    {
+        $files = $this->Request->files;
+        if ($files->count() == 0) {
+            return $this->getResponseErrorUpload(
+                ErrorUploadMobileApi_1::FILE_NOT_FOUND,
+                'file in request not found',
+                400
+            );
+        }
+
+        if (!$files->has('file')) {
+            return $this->getResponseErrorUpload(
+                ErrorUploadMobileApi_1::WRONG_FILED,
+                'wrong field',
+                400
+            );
+        }
+
+        /** @var $file UploadedFile */
+        $file = $files->get('file');
+
+        if (!$file->isValid()) {
+            return $this->getResponseErrorUpload(
+                ErrorUploadMobileApi_1::UPLOAD_ERROR,
+                $this->codeToMessage($file->getError()),
+                400
+            );
+        }
+
+        $Request->setFile($file);
+
+        return null;
     }
 
     private function fillRequest()
@@ -292,7 +343,48 @@ class Application implements HttpKernelInterface
         return $this->getResponse($Response, $http_code);
     }
 
-    public function sendExceptionResponse(\Exception $Exception)
+    private function getResponseErrorUpload($code, $message, $http_code)
+    {
+        $Response = new ErrorUploadMobileApi_1();
+        $Response->code = $code;
+        $Response->message = $message;
+
+        return $this->getResponse($Response, $http_code);
+    }
+
+    private function codeToMessage($code)
+    {
+        switch ($code) {
+            case UPLOAD_ERR_INI_SIZE:
+                $message = "The uploaded file exceeds the upload_max_filesize directive in php.ini";
+                break;
+            case UPLOAD_ERR_FORM_SIZE:
+                $message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form";
+                break;
+            case UPLOAD_ERR_PARTIAL:
+                $message = "The uploaded file was only partially uploaded";
+                break;
+            case UPLOAD_ERR_NO_FILE:
+                $message = "No file was uploaded";
+                break;
+            case UPLOAD_ERR_NO_TMP_DIR:
+                $message = "Missing a temporary folder";
+                break;
+            case UPLOAD_ERR_CANT_WRITE:
+                $message = "Failed to write file to disk";
+                break;
+            case UPLOAD_ERR_EXTENSION:
+                $message = "File upload stopped by extension";
+                break;
+
+            default:
+                $message = "Unknown upload error";
+                break;
+        }
+        return $message;
+    }
+
+public function sendExceptionResponse(\Exception $Exception)
     {
         $message = get_class($Exception) . ' ' . $Exception->getMessage();
         return $this->getResponseError(ErrorMobileApi_1::SERVER_ERROR, $message, 500);

@@ -1,10 +1,15 @@
 <?php
 namespace Test\MobileApi\Unit;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 require __DIR__ . '/../Controller/Ping.php';
+require __DIR__ . '/../Controller/Upload.php';
 require __DIR__ . '/../Message/Request/Ping/1.php';
+require __DIR__ . '/../Message/Request/Upload/1.php';
 require __DIR__ . '/../Message/Request/Ping/2.php';
 require __DIR__ . '/../Message/Response/Pong/1.php';
+require __DIR__ . '/../Message/Response/Upload/1.php';
 require __DIR__ . '/../Message/Response/Error/1.php';
 require __DIR__ . '/Handler.php';
 
@@ -17,7 +22,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
     {
         $this->Application = new \MobileApi\Application;
         $this->Application->setControllerPrefix('Test\MobileApi\Controller');
-        $this->Application->setControllers(array('Ping'));
+        $this->Application->setControllers(array('Ping', 'Upload'));
         $this->Application->setMessageRequestPrefix('Test\MobileApi\Message\Request');
     }
 
@@ -135,6 +140,75 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
         $Response = $this->Application->handle($Request);
         $this->assertSame(200, $Response->getStatusCode(), $comment);
+        $response = json_decode($Response->getContent(), true);
+        $this->assertSame(
+            $message,
+            $response,
+            $comment
+        );
+    }
+
+    public function provider_uploadFile()
+    {
+        $uri = 'http://localhost/Upload/1';
+        $result = array();
+        $file = new UploadedFile(__DIR__ . '/test.jpg', 'testFile', null, null, null, true);
+
+        $Request = \Symfony\Component\HttpFoundation\Request::create(
+            'http://localhost/Ping/2',
+            'POST',
+            array(),
+            array(),
+            array('file' => $file)
+        );
+        $result[] = array($Request, array('message' => 'ErrorUploadMobileApi', 'body' => array('code' => 1, 'message' => 'request not implement upload interface')), 400, 'get request not implements upload interface');
+
+        $Request = \Symfony\Component\HttpFoundation\Request::create(
+            'http://localhost/Ping/2',
+            'POST',
+            array(),
+            array(),
+            array('file' => $file)
+        );
+        $result[] = array($Request, array('message' => 'ErrorUploadMobileApi', 'body' => array('code' => 1, 'message' => 'request not implement upload interface')), 400, 'post request not implements upload interface');
+
+        $Request = \Symfony\Component\HttpFoundation\Request::create(
+            $uri,
+            'POST',
+            array('name' => 'name1'),
+            array()
+        );
+        $result[] = array($Request, array('message' => 'ErrorUploadMobileApi', 'body' => array('code' => 2, 'message' => 'file in request not found')), 400, 'file not found');
+
+        $Request = \Symfony\Component\HttpFoundation\Request::create(
+            $uri,
+            'POST',
+            array('name' => 'name1'),
+            array(),
+            array('image' => $file)
+        );
+        $result[] = array($Request, array('message' => 'ErrorUploadMobileApi', 'body' => array('code' => 3, 'message' => 'wrong field')), 400, 'wrong field');
+
+
+        $Request = \Symfony\Component\HttpFoundation\Request::create(
+            $uri,
+            'POST',
+            array('name' => 'name1'),
+            array(),
+            array('file' => $file)
+        );
+        $result[] = array($Request, array('message' => 'Upload', 'body' => array('name' => 'testFile', 'size' => filesize($file->getRealPath()))), 200, 'normal upload');
+
+        return $result;
+    }
+
+    /**
+     * @dataProvider provider_uploadFile
+     */
+    public function test_uploadFile(\Symfony\Component\HttpFoundation\Request $Request, array $message, $code, $comment)
+    {
+        $Response = $this->Application->handle($Request);
+        $this->assertSame($code, $Response->getStatusCode(), $comment . ' [' . $Response->getContent()  .']');
         $response = json_decode($Response->getContent(), true);
         $this->assertSame(
             $message,
