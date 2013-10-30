@@ -25,6 +25,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $this->Application->setControllerPrefix('Test\MobileApi\Controller');
         $this->Application->setControllers(array('Ping', 'Upload'));
         $this->Application->setMessageRequestPrefix('Test\MobileApi\Message\Request');
+        $this->Application->setMessageResponsePrefix('Test\MobileApi\Message\Response');
     }
 
     public function provider_handle_ping()
@@ -94,7 +95,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
     public function test_handle_ping(\Symfony\Component\HttpFoundation\Request $Request, $bson, $comment)
     {
         $this->Application->useBSON($bson);
-        $Response = $this->Application->handle($Request);
+        $Response = $this->Application->handle($Request, \MobileApi\Application::MASTER_REQUEST, false);
         $this->assertSame(200, $Response->getStatusCode(), $comment);
         $response = $bson ? bson_decode($Response->getContent()) : json_decode($Response->getContent(), true);
         $this->assertSame(
@@ -140,7 +141,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $this->Application->addPreHandler(new \Test\MobileApi\Handler\HandlerTestPong());
         $this->Application->addPreHandler(new \Test\MobileApi\Handler\HandlerTestError());
 
-        $Response = $this->Application->handle($Request);
+        $Response = $this->Application->handle($Request, \MobileApi\Application::MASTER_REQUEST, false);
         $this->assertSame(200, $Response->getStatusCode(), $comment);
         $response = json_decode($Response->getContent(), true);
         $this->assertSame(
@@ -209,7 +210,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
      */
     public function test_uploadFile(\Symfony\Component\HttpFoundation\Request $Request, array $message, $code, $comment)
     {
-        $Response = $this->Application->handle($Request);
+        $Response = $this->Application->handle($Request, \MobileApi\Application::MASTER_REQUEST, false);
         $this->assertSame($code, $Response->getStatusCode(), $comment . ' [' . $Response->getContent()  .']');
         $response = json_decode($Response->getContent(), true);
         $this->assertSame(

@@ -30,7 +30,7 @@ class Upload_1 implements RequestInterface, UploadInterface {
     function getAvailableResponses()
     {
         return array(
-            'Test\MobileApi\Message\Response\Upload_1',
+            'Upload_1',
         );
     }
 

@@ -348,7 +348,12 @@ class Application implements HttpKernelInterface
 
     private function checkResponseAppropriate(Message\MessageInterface $Response)
     {
-        return in_array(get_class($Response), $this->ApiRequest->getAvailableResponses());
+        $tmp = array();
+        foreach ($this->ApiRequest->getAvailableResponses() as $name) {
+            $tmp[] = $this->message_response_prefix . '\\' . $name;
+        }
+
+        return in_array(get_class($Response), $tmp);
     }
 
     private function getResponse(Message\Response\ResponseInterface $Response, $http_code)

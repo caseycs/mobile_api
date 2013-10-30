@@ -11,7 +11,7 @@ class Ping_1 implements \MobileApi\Message\Request\RequestInterface
     public function getAvailableResponses()
     {
         return array(
-            'Test\MobileApi\Message\Response\Pong_1',
+            'Pong_1',
         );
     }
 }
