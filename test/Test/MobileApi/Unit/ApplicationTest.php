@@ -3,16 +3,16 @@ namespace Test\MobileApi\Unit;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-require __DIR__ . '/../Controller/Ping.php';
-require __DIR__ . '/../Controller/Upload.php';
-require __DIR__ . '/../Message/Request/Ping/1.php';
-require __DIR__ . '/../Message/Request/Upload/1.php';
-require __DIR__ . '/../Message/Request/Ping/2.php';
-require __DIR__ . '/../Message/Response/Pong/1.php';
-require __DIR__ . '/../Message/Response/Upload/1.php';
-require __DIR__ . '/../Message/Response/Error/1.php';
-require __DIR__ . '/HandlerTestPong.php';
-require __DIR__ . '/HandlerTestError.php';
+require_once __DIR__ . '/../Controller/Ping.php';
+require_once __DIR__ . '/../Controller/Upload.php';
+require_once __DIR__ . '/../Message/Request/Ping/1.php';
+require_once __DIR__ . '/../Message/Request/Upload/1.php';
+require_once __DIR__ . '/../Message/Request/Ping/2.php';
+require_once __DIR__ . '/../Message/Response/Pong/1.php';
+require_once __DIR__ . '/../Message/Response/Upload/1.php';
+require_once __DIR__ . '/../Message/Response/Error/1.php';
+require_once __DIR__ . '/../Handler/HandlerTestPong.php';
+require_once __DIR__ . '/../Handler/HandlerTestError.php';
 
 class ApplicationTest extends \PHPUnit_Framework_TestCase
 {
@@ -137,8 +137,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
      * @dataProvider provider_preHandler
      */
     public function test_preHandler(\Symfony\Component\HttpFoundation\Request $Request, array $message, $comment) {
-        $this->Application->addPreHandler(new HandlerTestPong());
-        $this->Application->addPreHandler(new HandlerTestError());
+        $this->Application->addPreHandler(new \Test\MobileApi\Handler\HandlerTestPong());
+        $this->Application->addPreHandler(new \Test\MobileApi\Handler\HandlerTestError());
 
         $Response = $this->Application->handle($Request);
         $this->assertSame(200, $Response->getStatusCode(), $comment);
@@ -154,7 +154,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
     {
         $uri = 'http://localhost/Upload/1';
         $result = array();
-        $file = new UploadedFile(__DIR__ . '/test.jpg', 'testFile', null, null, null, true);
+        $file = new UploadedFile(__DIR__ . '/../../../test.jpg', 'testFile', null, null, null, true);
 
         $Request = \Symfony\Component\HttpFoundation\Request::create(
             'http://localhost/Ping/2',

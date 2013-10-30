@@ -7,7 +7,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-namespace Test\MobileApi\Unit;
+namespace Test\MobileApi\Handler;
 
 
 use MobileApi\ControllerInterface;
