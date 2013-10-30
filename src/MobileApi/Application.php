@@ -33,10 +33,10 @@ class Application implements HttpKernelInterface
     private $preHandlers = array();
 
     /* @var string */
-    private $controller_prefix, $message_request_prefix;
+    private $controller_prefix, $message_request_prefix, $message_response_prefix, $documentation_url;
 
     /* @var array */
-    private $controllers;
+    private $controllers, $documentation_requests, $documentation_responses;
 
     /* @var bool */
     private
@@ -53,6 +53,11 @@ class Application implements HttpKernelInterface
         $this->message_request_prefix = $message_request_prefix;
     }
 
+    public function setMessageResponsePrefix($message_response_prefix)
+    {
+        $this->message_response_prefix = $message_response_prefix;
+    }
+
     public function setControllers(array $controllers)
     {
         $this->controllers = $controllers;
@@ -61,6 +66,13 @@ class Application implements HttpKernelInterface
     public function useBSON($use_bson)
     {
         $this->use_bson = $use_bson;
+    }
+
+    public function setDocumentation($url, array $requests, array $responses)
+    {
+        $this->documentation_url = $url;
+        $this->documentation_requests = $requests;
+        $this->documentation_responses = $responses;
     }
 
     public function handle(Request $Request, $type = self::MASTER_REQUEST, $catch = true)
@@ -102,6 +114,18 @@ class Application implements HttpKernelInterface
                 'route not found',
                 404
             );
+        }
+
+        //documentation
+        if ($this->documentation_url && $route['_route'] === Documentation::ROUTE) {
+            $Documentation = new Documentation(
+                $this->documentation_url,
+                $this->message_request_prefix,
+                $this->documentation_requests,
+                $this->message_response_prefix,
+                $this->documentation_responses
+            );
+            return $Documentation->show($this->Request);
         }
 
         $this->ApiRequest = $this->getApiRequest($route['_route'], $route['protocol_version']);
@@ -189,6 +213,11 @@ class Application implements HttpKernelInterface
                 array('protocol_version' => '\d+')
             );
             $RouteCollection->add($controller, $Route);
+        }
+
+        if ($this->documentation_url) {
+            $Route = new Route('/' . $this->documentation_url);
+            $RouteCollection->add(Documentation::ROUTE, $Route);
         }
 
         $UrlMatcher = new UrlMatcher($RouteCollection, $RequestContext);
