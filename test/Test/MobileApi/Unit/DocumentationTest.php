@@ -3,10 +3,10 @@ namespace Test\MobileApi\Unit;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-require __DIR__ . '/../Controller/Ping.php';
-require __DIR__ . '/../Message/Request/Ping/1.php';
-require __DIR__ . '/../Message/Request/Ping/2.php';
-require __DIR__ . '/../Message/Response/Pong/1.php';
+require_once __DIR__ . '/../Controller/Ping.php';
+require_once __DIR__ . '/../Message/Request/Ping/1.php';
+require_once __DIR__ . '/../Message/Request/Ping/2.php';
+require_once __DIR__ . '/../Message/Response/Pong/1.php';
 
 class DocumentationTest extends \PHPUnit_Framework_TestCase
 {
