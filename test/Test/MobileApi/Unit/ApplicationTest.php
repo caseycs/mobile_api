@@ -39,52 +39,41 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
             'GET',
             array()
         );
-        $result[] = array($Request, false, 'get params');
+        $result[] = array($Request, 'get params');
 
         $Request = \Symfony\Component\HttpFoundation\Request::create(
             $uri,
             'GET',
             array('json' => json_encode(array()))
         );
-        $result[] = array($Request, false, 'get json encoded empty array');
+        $result[] = array($Request, 'get json encoded empty array');
 
         $Request = \Symfony\Component\HttpFoundation\Request::create(
             $uri,
             'GET',
             array('json' => '')
         );
-        $result[] = array($Request, false, 'get json empty string');
+        $result[] = array($Request, 'get json empty string');
 
         $Request = \Symfony\Component\HttpFoundation\Request::create(
             $uri,
             'POST'
         );
-        $result[] = array($Request, false, 'post params');
+        $result[] = array($Request, 'post params');
 
         $Request = \Symfony\Component\HttpFoundation\Request::create(
             $uri,
             'POST',
             array('json' => json_encode(array()))
         );
-        $result[] = array($Request, false, 'post json encoded empty array');
+        $result[] = array($Request, 'post json encoded empty array');
 
         $Request = \Symfony\Component\HttpFoundation\Request::create(
             $uri,
             'POST',
             array('json' => '')
         );
-        $result[] = array($Request, false, 'post json empty string');
-
-        $Request = \Symfony\Component\HttpFoundation\Request::create(
-            $uri,
-            'POST',
-            array(),
-            array(),
-            array(),
-            array(),
-            bson_encode(array())
-        );
-        $result[] = array($Request, true, 'post bson');
+        $result[] = array($Request, 'post json empty string');
 
         return $result;
     }
@@ -92,12 +81,11 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provider_handle_ping
      */
-    public function test_handle_ping(\Symfony\Component\HttpFoundation\Request $Request, $bson, $comment)
+    public function test_handle_ping(\Symfony\Component\HttpFoundation\Request $Request, $comment)
     {
-        $this->Application->useBSON($bson);
         $Response = $this->Application->handle($Request, \MobileApi\Application::MASTER_REQUEST, false);
         $this->assertSame(200, $Response->getStatusCode(), $comment);
-        $response = $bson ? bson_decode($Response->getContent()) : json_decode($Response->getContent(), true);
+        $response = json_decode($Response->getContent(), true);
         $this->assertSame(
             array('message' => 'Pong', 'body' => array('content' => 'Pong')),
             $response,
@@ -190,7 +178,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
             array(),
             array('image' => $file)
         );
-        $result[] = array($Request, array('message' => 'ErrorUploadMobileApi', 'body' => array('code' => 3, 'message' => 'wrong field')), 400, 'wrong field');
+        $result[] = array($Request, array('message' => 'ErrorUploadMobileApi', 'body' => array('code' => 3, 'message' => 'wrong field, expecting file')), 400, 'wrong field');
 
 
         $Request = \Symfony\Component\HttpFoundation\Request::create(

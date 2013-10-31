@@ -5,7 +5,7 @@ use MobileApi\Message\Request\UploadInterface;
 use MobileApi\Message\Response\ErrorUploadMobileApi_1;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
@@ -40,11 +40,6 @@ class Application implements HttpKernelInterface
     /* @var array */
     private $controllers, $documentation_requests, $documentation_responses;
 
-    /* @var bool */
-    private
-        $use_bson = false,
-        $response_bson = false;
-
     public function setControllerPrefix($controller_prefix)
     {
         $this->controller_prefix = $controller_prefix;
@@ -63,11 +58,6 @@ class Application implements HttpKernelInterface
     public function setControllers(array $controllers)
     {
         $this->controllers = $controllers;
-    }
-
-    public function useBSON($use_bson)
-    {
-        $this->use_bson = $use_bson;
     }
 
     public function setDocumentation($title, $url, array $requests, array $responses)
@@ -326,20 +316,6 @@ class Application implements HttpKernelInterface
                 }
             }
 
-            if ($this->use_bson && $this->Request->getContent()) {
-                $this->response_bson = true;
-                try {
-                    $result = @bson_decode($this->Request->getContent());
-                    if (is_array($result)) {
-                        return $result;
-                    } else {
-                        return false;
-                    }
-                } catch (\MongoException $Exception) {
-                    return false;
-                }
-            }
-
             $GetParser = new Message\Request\ParameterParser;
             return $GetParser->toArray($this->ApiRequest, $this->Request->request);
         } else {
@@ -375,13 +351,7 @@ class Application implements HttpKernelInterface
             'body' => (array)$Response
         );
 
-        if ($this->response_bson) {
-            $content = bson_encode($response);
-        } else {
-            $content = json_encode($response);
-        }
-
-        $Response = new Response($content, $http_code, array('Content-Type' => 'application/json'));
+        $Response = new JsonResponse($response, $http_code);
 
         return $Response;
     }
