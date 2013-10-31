@@ -163,30 +163,24 @@ class Documentation
     private function processStructureAndDescription(Message\MessageInterface $Message)
     {
         $ReflectionClass = new \ReflectionClass($Message);
-
-        $comment_message = $this->processDocComment($ReflectionClass->getDocComment());
-
-        //extract constants values and fields comments
-        $a = strpos($comment_message, PHP_EOL . PHP_EOL . self::COMMENT_PREFIX_PROPERTY);
-        $b = strpos($comment_message, PHP_EOL . PHP_EOL . self::COMMENT_PREFIX_ENUM);
-        $tmp2 = min(array($a, $b));
-
+        $doc_comment = $this->processDocComment($ReflectionClass->getDocComment());
+        $comment_message = '';
         $comments = array();
-        if ($tmp2) {
-            $comment_fields = trim(substr($comment_message, $tmp2));
-            $comment_message = substr($comment_message, 0, $tmp2);
 
-            $pattern = '~((?:' . self::COMMENT_PREFIX_ENUM . '|' . self::COMMENT_PREFIX_PROPERTY . ')[0-9a-z\._]+)~i';
-            $comment_fields = preg_split($pattern, $comment_fields, -1, \PREG_SPLIT_DELIM_CAPTURE | \ PREG_SPLIT_NO_EMPTY);
-            do {
-                $field = current($comment_fields);
-                $description = next($comment_fields);
-
-                if (trim($field) && trim($description)) {
-                    $comments[trim($field)] = trim($description);
-                }
-            } while (next($comment_fields));
+        $last = &$comment_message;
+        foreach (explode(PHP_EOL . PHP_EOL, $doc_comment) as $p) {
+            if (0 === strpos($p, self::COMMENT_PREFIX_ENUM) || 0 === strpos($p, self::COMMENT_PREFIX_PROPERTY)) {
+                $key = substr($p, 0, strpos($p, PHP_EOL));
+                $value = substr($p, strpos($p, PHP_EOL));
+                $comments[$key] = $value . PHP_EOL . PHP_EOL;
+                $last = &$comments[$key];
+            } else {
+                $last .= $p . PHP_EOL . PHP_EOL;
+            }
         }
+
+        $comment_message = trim($comment_message);
+        $comments = array_map('trim', $comments);
 
         $result = array(
             'description' => nl2br($comment_message),
