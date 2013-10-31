@@ -1,0 +1,30 @@
+{{> header }}
+<div class="container">
+
+    <div class="page-header">
+        <h1><a href="{{ url }}">{{ project }}</a></h1>
+    </div>
+
+    <h2>Request <code>{{ request }}</code></h2>
+
+    {{& description }}
+
+    {{> structure }}
+
+    <h3>Application responses</h3>
+    <ul>
+        {{# responses_application }}
+        <li><a href="{{ url }}">{{ name }}</a></li>
+        {{/ responses_application }}
+    </ul>
+
+    <h3>System responses</h3>
+    <ul>
+        {{# responses_system }}
+        <li><a href="{{ url }}">{{ name }}</a></li>
+        {{/ responses_system }}
+    </ul>
+
+
+</div>
+{{> footer }}

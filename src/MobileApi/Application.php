@@ -17,6 +17,8 @@ use MobileApi\Message\Response\ErrorMobileApi_1;
 
 class Application implements HttpKernelInterface
 {
+    const UPLOAD_FIELD = 'file';
+
     /**
      * @var Request
      */
@@ -33,7 +35,7 @@ class Application implements HttpKernelInterface
     private $preHandlers = array();
 
     /* @var string */
-    private $controller_prefix, $message_request_prefix, $message_response_prefix, $documentation_url;
+    private $controller_prefix, $message_request_prefix, $message_response_prefix, $documentation_url, $documentation_title;
 
     /* @var array */
     private $controllers, $documentation_requests, $documentation_responses;
@@ -68,8 +70,9 @@ class Application implements HttpKernelInterface
         $this->use_bson = $use_bson;
     }
 
-    public function setDocumentation($url, array $requests, array $responses)
+    public function setDocumentation($title, $url, array $requests, array $responses)
     {
+        $this->documentation_title = $title;
         $this->documentation_url = $url;
         $this->documentation_requests = $requests;
         $this->documentation_responses = $responses;
@@ -119,6 +122,7 @@ class Application implements HttpKernelInterface
         //documentation
         if ($this->documentation_url && $route['_route'] === Documentation::ROUTE) {
             $Documentation = new Documentation(
+                $this->documentation_title,
                 $this->documentation_url,
                 $this->message_request_prefix,
                 $this->documentation_requests,
@@ -216,7 +220,7 @@ class Application implements HttpKernelInterface
         }
 
         if ($this->documentation_url) {
-            $Route = new Route('/' . $this->documentation_url);
+            $Route = new Route($this->documentation_url);
             $RouteCollection->add(Documentation::ROUTE, $Route);
         }
 
@@ -244,16 +248,24 @@ class Application implements HttpKernelInterface
             );
         }
 
-        if (!$files->has('file')) {
+        if ($files->count() > 1) {
             return $this->getResponseErrorUpload(
-                ErrorUploadMobileApi_1::WRONG_FILED,
-                'wrong field',
+                ErrorUploadMobileApi_1::MANY_FILES_UPLOADED,
+                'more then 1 file uploaded',
+                400
+            );
+        }
+
+        if (!$files->has(self::UPLOAD_FIELD)) {
+            return $this->getResponseErrorUpload(
+                ErrorUploadMobileApi_1::WRONG_FIELD,
+                'wrong field, expecting ' . self::UPLOAD_FIELD,
                 400
             );
         }
 
         /** @var $file UploadedFile */
-        $file = $files->get('file');
+        $file = $files->get(self::UPLOAD_FIELD);
 
         if (!$file->isValid()) {
             return $this->getResponseErrorUpload(
@@ -369,7 +381,8 @@ class Application implements HttpKernelInterface
             $content = json_encode($response);
         }
 
-        $Response = new Response($content, $http_code);
+        $Response = new Response($content, $http_code, array('Content-Type' => 'application/json'));
+
         return $Response;
     }
 

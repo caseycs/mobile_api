@@ -3,6 +3,39 @@ namespace MobileApi\Message\Response;
 
 use MobileApi\Message\Field;
 
+/**
+ * Global mobile api error, can happen anytime and should by handled on client correct.
+ *
+ * enum.code.1
+ * internal server error
+ *
+ * enum.code.100
+ * unknown command
+ *
+ * enum.code.101
+ * controller not found
+ *
+ * enum.code.102
+ * request class not found
+ *
+ * enum.code.103
+ * request decode fail
+ *
+ * enum.code.104
+ * request invalid
+ *
+ * enum.code.105
+ * response class invalid
+ *
+ * enum.code.106
+ * response class is not appropriate for request class
+ *
+ * enum.code.107
+ * response invalid
+ *
+ * property.message
+ * text explanation
+ */
 class ErrorMobileApi_1 implements \MobileApi\Message\Response\ResponseInterface
 {
     //common errors

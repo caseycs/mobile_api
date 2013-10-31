@@ -20,7 +20,7 @@ class DocumentationTest extends \PHPUnit_Framework_TestCase
         $this->Application->setControllers(array('Ping'));
         $this->Application->setMessageRequestPrefix('Test\MobileApi\Message\Request');
         $this->Application->setMessageResponsePrefix('Test\MobileApi\Message\Response');
-        $this->Application->setDocumentation('_doc', array('Ping_1', 'Ping_2'), array('Pong_1'));
+        $this->Application->setDocumentation('test', '_doc', array('Ping_1', 'Ping_2'), array('Pong_1'));
     }
 
     public function test_documentation_not_exists()

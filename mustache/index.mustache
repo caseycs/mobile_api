@@ -1,0 +1,17 @@
+{{> header }}
+<div class="container">
+
+    <div class="page-header">
+        <h1>{{ project }}</h1>
+    </div>
+
+    <h2>Requests</h2>
+
+    <ul>
+        {{# requests }}
+            <li><a href="{{ url }}">{{ name }}</a></li>
+        {{/ requests }}
+    </ul>
+
+</div>
+{{> footer }}
