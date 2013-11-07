@@ -1,9 +1,9 @@
 {
     "name": "caseycs/mobile-api",
     "require": {
-        "symfony/routing": "v2.3.0",
-        "symfony/http-foundation": "v2.3.0",
-        "symfony/http-kernel": "v2.3.0",
+        "symfony/routing": "v2.3.6",
+        "symfony/http-foundation": "v2.3.6",
+        "symfony/http-kernel": "v2.3.6",
         "mustache/mustache": "v2.4.1"
     },
     "require-dev": {
