@@ -101,6 +101,19 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 array(
+                    'a' => array(Field::REQUIRED, Field::ASSOC, array(
+                        'a' => array(Field::REQUIRED, Field::INTEGER),
+                        'b' => array(Field::OPTIONAL, Field::STRING),
+                    )),
+                ),
+                array(
+                    'a' => array('a' => 10, 'b' => null),
+                ),
+                false,
+                'required assoc fail',
+            ),
+            array(
+                array(
                     'a' => array(
                         Field::REPEATED,
                         Field::ASSOC,

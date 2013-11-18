@@ -8,7 +8,12 @@ class Manager
     public function isValid(\MobileApi\Message\MessageInterface $Message, &$error)
     {
         $structure = $Message->getStructure();
-        $message = get_object_vars($Message);
+
+        $message = array();
+        foreach (get_object_vars($Message) as $field => $value) {
+            if ($value === null) continue;
+            $message[$field] = $value;
+        }
 
         return $this->isValidInternal($message, $structure, $error);
     }
@@ -29,7 +34,7 @@ class Manager
             }
 
             //skip unexisted optional field value check
-            if ($flags[0] === Field::OPTIONAL && !isset($message[$field])) {
+            if ($flags[0] === Field::OPTIONAL && !array_key_exists($field, $message)) {
                 continue;
             }
 
@@ -48,13 +53,13 @@ class Manager
             case Field::OPTIONAL:
                 break;
             case Field::REQUIRED:
-                if (!isset($message[$field])) {
+                if (!array_key_exists($field, $message)) {
                     $error = 'required field not found: ' . $field;
                     return false;
                 }
                 break;
             case Field::REPEATED:
-                if (!isset($message[$field])) {
+                if (!array_key_exists($field, $message)) {
                     $error = 'repeated field not found: ' . $field;
                     return false;
                 }
