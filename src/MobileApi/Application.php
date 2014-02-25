@@ -162,11 +162,18 @@ class Application implements HttpKernelInterface
 
         /* @var ControllerInterface $Controller */
         $Controller = new $route['controller'];
+        if (!($Controller instanceof ControllerInterface)) {
+            return $this->getResponseError(
+                ErrorMobileApi_1::SERVER_ERROR,
+                'controller does not implement ControllerInterface',
+                500
+            );
+        }
 
         $Response = null;
         if (!empty($this->preHandlers)) {
             foreach($this->preHandlers as $preHandler) {
-                $Response = $preHandler->run($Controller, $this->ApiRequest);
+                $Response = $preHandler->run($Controller, $this->ApiRequest, $Request->getSession());
                 if (null !== $Response) {
                     break;
                 }
@@ -174,7 +181,7 @@ class Application implements HttpKernelInterface
         }
 
         if (null === $Response) {
-            $Response = $Controller->run($this->ApiRequest);
+            $Response = $Controller->run($this->ApiRequest, $Request->getSession());
         }
 
         if (!$this->checkResponseAppropriate($Response)) {
